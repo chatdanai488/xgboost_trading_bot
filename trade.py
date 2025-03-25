@@ -101,7 +101,7 @@ cm = confusion_matrix(y_test, y_pred)
 proba = model.predict_proba(X)  # shape = (n, 2)
 df['Confidence'] = proba[:, 1]  # ความมั่นใจใน class 1 (จะขึ้น)
 print(df['Confidence'])
-confidence_threshold = 0.90
+confidence_threshold = 0.85
 
 df['Signal'] = np.where(df['Confidence'] > confidence_threshold, 1,
                         np.where(df['Confidence'] < (1 - confidence_threshold), 0, np.nan))
