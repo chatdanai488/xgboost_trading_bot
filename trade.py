@@ -13,13 +13,14 @@ import sys
 import matplotlib.ticker as ticker
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
-sys.stdout.reconfigure(encoding='utf-8')
+# sys.stdout.reconfigure(encoding='utf-8')
 
 # -----------------------------
 # Streamlit Config
 # -----------------------------
-st.set_page_config(page_title="Crypto AI Dashboard", layout="wide")
 st.title("🚀 BTC/USDT AI Signal Dashboard")
+
+st.set_page_config(page_title="Crypto AI Dashboard", layout="wide")
 st_autorefresh(interval=30000, key="refresh")  # refresh ทุก 5 วินาที
 
 
