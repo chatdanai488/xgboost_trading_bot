@@ -71,7 +71,7 @@ y_pred = model.predict(X_test)
 # ========== STEP 7: Predict Full & Confidence =====
 proba = model.predict_proba(X)
 df['Confidence'] = proba[:, 1]  # confidence of class 1 (price will go up)
-confidence_threshold = 0.85
+confidence_threshold = 0.80
 df['Signal'] = np.where(df['Confidence'] > confidence_threshold, 1,
                         np.where(df['Confidence'] < (1 - confidence_threshold), 0, np.nan))
 df['Position'] = df['Signal'].map({1: 'Long', 0: 'Short'})
