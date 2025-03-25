@@ -64,6 +64,14 @@ longs = df[df['Signal'] == 1]
 shorts = df[df['Signal'] == 0]
 neutral = df[df['Signal'].isna()]
 
+# Normalize Confidence for scaling with price
+conf_min = df['Confidence'].min()
+conf_max = df['Confidence'].max()
+price_min = df['Close'].min()
+price_max = df['Close'].max()
+df['Confidence_scaled'] = ((df['Confidence'] - conf_min) / (conf_max - conf_min)) \
+    * (price_max - price_min) + price_min
+
 importances = model.feature_importances_
 feat_names = X.columns.tolist()
 sorted_idx = np.argsort(importances)
@@ -107,8 +115,8 @@ price_fig.add_trace(go.Scatter(
     x=df.index, y=df['EMA_fast'], mode='lines', name='EMA_fast', line=dict(color='orange')))
 price_fig.add_trace(go.Scatter(
     x=df.index, y=df['EMA_slow'], mode='lines', name='EMA_slow', line=dict(color='blue')))
-price_fig.add_trace(go.Scatter(x=df.index, y=df['Confidence'] * df['Close'].max(
-), mode='lines', name='Confidence', line=dict(color='purple', dash='dot')))
+price_fig.add_trace(go.Scatter(x=df.index, y=df['Confidence_scaled'], mode='lines',
+                               name='Confidence', line=dict(color='purple', dash='dot')))
 price_fig.add_trace(go.Scatter(x=longs.index, y=longs['Close'], mode='markers',
                                name='Long', marker=dict(color='green', symbol='triangle-up', size=10)))
 price_fig.add_trace(go.Scatter(x=shorts.index, y=shorts['Close'], mode='markers',
@@ -137,8 +145,8 @@ rsi_fig.update_layout(title="RSI Indicator", yaxis_title="RSI", height=300)
 
 # Backtest PnL (simple strategy)
 df['Shifted_Close'] = df['Close'].shift(-5)
-df['Trade_Return'] = np.where(df['Signal'].notna(
-), (df['Shifted_Close'] - df['Close']) / df['Close'], 0)
+df['Trade_Return'] = np.where(df['Signal'].notna(),
+                              (df['Shifted_Close'] - df['Close']) / df['Close'], 0)
 df['Strategy_Return'] = df['Trade_Return'] * np.where(df['Signal'] == 1, 1, -1)
 df['Cumulative_Return'] = (1 + df['Strategy_Return']).cumprod()
 
