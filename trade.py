@@ -10,19 +10,12 @@ import plotly.graph_objects as go
 import plotly.express as px
 import ccxt
 
-# -----------------------------
-# Streamlit Config
-# -----------------------------
 st.set_page_config(page_title="Crypto AI Dashboard", layout="wide")
 st.title("🚀 BTC/USDT AI Signal Dashboard")
-st_autorefresh(interval=5000, key="refresh")  # refresh ทุก 60 วิ
+st_autorefresh(interval=5000, key="refresh")
 
-# -----------------------------
-# Columns for charts
-# -----------------------------
 chart_col1, chart_col2 = st.columns([2, 1])
 
-# ========== STEP 1: Fetch Live Data ==============
 try:
     exchange = ccxt.kucoin()
     ohlcv = exchange.fetch_ohlcv('BTC/USDT', timeframe='1m', limit=100)
@@ -34,7 +27,6 @@ except Exception as e:
     st.error(f"❌ Error fetching data: {e}")
     st.stop()
 
-# ========== STEP 2: Feature Engineering ============
 df['Candle_Body'] = abs(df['Close'] - df['Open'])
 df['Range'] = df['High'] - df['Low']
 df['Return'] = df['Close'].pct_change()
@@ -48,29 +40,22 @@ df['OBV'] = ta.volume.OnBalanceVolumeIndicator(
     df['Close'], df['Volume']).on_balance_volume()
 df['Volume_Change'] = df['Volume'].pct_change()
 
-# ========== STEP 3: Create Target ================
 df['Target'] = (df['Close'].shift(-5) > df['Close']).astype(int)
-
-# ========== STEP 4: Prepare Data =================
 df = df.dropna()
 features = ['Return', 'Candle_Body', 'Range', 'EMA_fast', 'EMA_slow',
             'RSI', 'BollingerBands', 'OBV', 'ADX', 'Volume_Change']
 X = df[features]
 y = df['Target']
 
-# ========== STEP 5: Train/Test Split =============
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, shuffle=False)
-
-# ========== STEP 6: Train Model ===================
 model = XGBClassifier(n_estimators=100, max_depth=5,
                       learning_rate=0.1, eval_metric='logloss')
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
-# ========== STEP 7: Predict Full & Confidence =====
 proba = model.predict_proba(X)
-df['Confidence'] = proba[:, 1]  # confidence of class 1 (price will go up)
+df['Confidence'] = proba[:, 1]
 confidence_threshold = 0.80
 df['Signal'] = np.where(df['Confidence'] > confidence_threshold, 1,
                         np.where(df['Confidence'] < (1 - confidence_threshold), 0, np.nan))
@@ -79,7 +64,6 @@ longs = df[df['Signal'] == 1]
 shorts = df[df['Signal'] == 0]
 neutral = df[df['Signal'].isna()]
 
-# ========== STEP 8: Plot - Feature Importance =======
 importances = model.feature_importances_
 feat_names = X.columns.tolist()
 sorted_idx = np.argsort(importances)
@@ -101,7 +85,6 @@ feature_fig.update_layout(
     margin=dict(l=40, r=20, t=40, b=40)
 )
 
-# ========== STEP 9: Plot - Confusion Matrix =========
 cm = confusion_matrix(y_test, y_pred)
 cm_fig = px.imshow(
     cm,
@@ -117,10 +100,15 @@ cm_fig.update_layout(
     margin=dict(l=40, r=20, t=40, b=40)
 )
 
-# ========== STEP 10: Plot - BTC Price + Signals ======
 price_fig = go.Figure()
 price_fig.add_trace(go.Scatter(
     x=df.index, y=df['Close'], mode='lines', name='Price', line=dict(color='gray')))
+price_fig.add_trace(go.Scatter(
+    x=df.index, y=df['EMA_fast'], mode='lines', name='EMA_fast', line=dict(color='orange')))
+price_fig.add_trace(go.Scatter(
+    x=df.index, y=df['EMA_slow'], mode='lines', name='EMA_slow', line=dict(color='blue')))
+price_fig.add_trace(go.Scatter(x=df.index, y=df['Confidence'] * df['Close'].max(
+), mode='lines', name='Confidence', line=dict(color='purple', dash='dot')))
 price_fig.add_trace(go.Scatter(x=longs.index, y=longs['Close'], mode='markers',
                                name='Long', marker=dict(color='green', symbol='triangle-up', size=10)))
 price_fig.add_trace(go.Scatter(x=shorts.index, y=shorts['Close'], mode='markers',
@@ -128,7 +116,7 @@ price_fig.add_trace(go.Scatter(x=shorts.index, y=shorts['Close'], mode='markers'
 price_fig.add_trace(go.Scatter(x=neutral.index, y=neutral['Close'], mode='markers',
                                name='No Signal', marker=dict(color='lightgray', size=6)))
 price_fig.update_layout(
-    title="📈 BTC Price with Long/Short Signals",
+    title="📈 BTC Price with Long/Short Signals + EMA + Confidence",
     xaxis_title="Time",
     yaxis_title="Price (USDT)",
     height=600,
@@ -137,7 +125,32 @@ price_fig.update_layout(
                 y=1.02, xanchor="right", x=1)
 )
 
-# ========== STEP 11: Show Charts in Streamlit =========
+# RSI subplot
+rsi_fig = go.Figure()
+rsi_fig.add_trace(go.Scatter(
+    x=df.index, y=df['RSI'], name='RSI', line=dict(color='cyan')))
+rsi_fig.add_shape(type='line', x0=df.index[0], x1=df.index[-1], y0=70, y1=70,
+                  line=dict(color='red', dash='dash'))
+rsi_fig.add_shape(type='line', x0=df.index[0], x1=df.index[-1], y0=30, y1=30,
+                  line=dict(color='green', dash='dash'))
+rsi_fig.update_layout(title="RSI Indicator", yaxis_title="RSI", height=300)
+
+# Backtest PnL (simple strategy)
+df['Shifted_Close'] = df['Close'].shift(-5)
+df['Trade_Return'] = np.where(df['Signal'].notna(
+), (df['Shifted_Close'] - df['Close']) / df['Close'], 0)
+df['Strategy_Return'] = df['Trade_Return'] * np.where(df['Signal'] == 1, 1, -1)
+df['Cumulative_Return'] = (1 + df['Strategy_Return']).cumprod()
+
+pnl_fig = go.Figure()
+pnl_fig.add_trace(go.Scatter(
+    x=df.index, y=df['Cumulative_Return'], name='Strategy PnL', line=dict(color='gold')))
+pnl_fig.update_layout(title="💰 Backtest Cumulative PnL",
+                      height=300, yaxis_title="Cumulative Return")
+
+# Show in Streamlit
 chart_col1.plotly_chart(price_fig, use_container_width=True)
+chart_col1.plotly_chart(rsi_fig, use_container_width=True)
+chart_col1.plotly_chart(pnl_fig, use_container_width=True)
 chart_col2.plotly_chart(feature_fig, use_container_width=True)
 chart_col2.plotly_chart(cm_fig, use_container_width=True)
