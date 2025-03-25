@@ -8,3 +8,4 @@ ccxt
 streamlit
 numpy
 streamlit-autorefresh
+seaborn 
