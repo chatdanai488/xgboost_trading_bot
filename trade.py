@@ -15,7 +15,7 @@ import ccxt
 # -----------------------------
 st.set_page_config(page_title="Crypto AI Dashboard", layout="wide")
 st.title("🚀 BTC/USDT AI Signal Dashboard")
-st_autorefresh(interval=60000, key="refresh")  # refresh ทุก 60 วิ
+st_autorefresh(interval=5000, key="refresh")  # refresh ทุก 60 วิ
 
 # -----------------------------
 # Columns for charts
