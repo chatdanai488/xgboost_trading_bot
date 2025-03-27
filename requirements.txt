@@ -10,3 +10,7 @@ numpy
 streamlit-autorefresh
 seaborn 
 plotly
+shimmy
+stable-baselines3
+gym
+lightgbm
