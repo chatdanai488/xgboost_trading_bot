@@ -26,7 +26,7 @@ price_placeholder = st.empty()
 # ===== แสดงผลแบบ Real-Time =====
 while True:
     exchange = ccxt.kucoin()
-    ohlcv = exchange.fetch_ohlcv('BTC/USDT', timeframe='5m', limit=100)
+    ohlcv = exchange.fetch_ohlcv('BTC/USDT', timeframe='1m', limit=100)
     df = pd.DataFrame(
         ohlcv, columns=['Timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
 
