@@ -13,6 +13,8 @@ from ta.volatility import BollingerBands
 import ta
 import streamlit as st
 import time
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
 
 
 # ===== เตรียมเว็บ UI =====
@@ -255,7 +257,8 @@ while True:
         signal = decide_trade_action(df, model_rl)
         price = df.iloc[-1]['Close']
 
-        signal_placeholder.markdown(f"### 📢 สัญญาณล่าสุด: **{signal}**")
+        signal_placeholder.markdown(
+            f"### 📢 สัญญาณล่าสุด: **{signal}** /n### 🕒 เวลา: **{current_time}**")
         price_placeholder.metric("ราคาปัจจุบัน BTC/USDT", f"${price:.2f}")
 
         time.sleep(10)
