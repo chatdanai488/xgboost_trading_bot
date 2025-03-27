@@ -18,7 +18,7 @@ chart_col1, chart_col2 = st.columns([2, 1])
 
 try:
     exchange = ccxt.kucoin()
-    ohlcv = exchange.fetch_ohlcv('BTC/USDT', timeframe='1m', limit=100)
+    ohlcv = exchange.fetch_ohlcv('BTC/USDT', timeframe='5m', limit=100)
     df = pd.DataFrame(
         ohlcv, columns=['Timestamp', 'Open', 'High', 'Low', 'Close', 'Volume'])
     df['Timestamp'] = pd.to_datetime(df['Timestamp'], unit='ms')
