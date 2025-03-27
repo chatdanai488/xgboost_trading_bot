@@ -246,6 +246,8 @@ while True:
         return ['HOLD', 'BUY', 'SELL'][action[0]]
 
     signal = decide_trade_action(df, model_rl)
+    current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    print(f"🕒 เวลา: {current_time}")
     print(f"✅ สัญญาณล่าสุดจากโมเดล: {signal}")
 
     try:
