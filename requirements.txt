@@ -14,3 +14,4 @@ shimmy
 stable-baselines3
 gym
 lightgbm
+line-bot-sdk

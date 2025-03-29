@@ -17,8 +17,14 @@ from sklearn.preprocessing import LabelEncoder
 import sys
 import streamlit as st
 import time
+from linebot.v3.messaging import MessagingApi, Configuration, ApiClient
+from linebot.v3.messaging.models import TextMessage, PushMessageRequest, ImageMessage
 sys.stdout.reconfigure(encoding='utf-8')
 
+user_id = 'U9713684916c46794109094dc4c180a08'  # 替換成您的 User ID
+config = Configuration(
+    access_token='GwwVLTOUtUrelOSZZgmA6Zv2JMbFOafVVSOfMw7WeKZloPTxFx1xa3CndCqnrjdIKBUZw8FnbGZuZAU3nxaI2ouAUJpRMxXv8wBRdnmrECfuRvMNH1oO/MolAWgFdGMaL6PLTT7SvZxm815y3RgznAdB04t89/1O/w1cDnyilFU=')
+messaging_api = MessagingApi(ApiClient(configuration=config))
 
 # Streamlit User Interface
 st.set_page_config(
@@ -196,4 +202,13 @@ while True:
         f"🧠 **ความมั่นใจ:** {round(proba*100, 2)}% | ADX: {round(adx_val, 2)}")
     placeholder.markdown(f"🎯 **คำแนะนำ:** {action}")
     placeholder.markdown("=========================================")
-    time.sleep(10)  # รอ 1 นาทีเพื่อให้ข้อมูลใหม่เข้ามา
+
+    # 建立文字訊息 TextMessage
+    full_message = f"🔮 แนวโน้มถัดไป: {dir_label.upper()} ต่อเนื่องประมาณ {len_pred} แท่ง \n🧠 ความมั่นใจ: {round(proba*100, 2)}% | ADX: {round(adx_val, 2)}\n🎯 คำแนะนำ: {action}"
+    text_message = TextMessage(text=full_message)
+    push_message_request = PushMessageRequest(
+        to=user_id, messages=[text_message])
+
+    # 傳送訊息
+    messaging_api.push_message(push_message_request=push_message_request)
+    time.sleep(30)  # รอ 1 นาทีเพื่อให้ข้อมูลใหม่เข้ามา
