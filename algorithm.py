@@ -143,7 +143,7 @@ while True:
     # ดึงราคาล่าสุดของแท่งเทียนปัจจุบัน (สมมติ df ถูกกำหนดแล้ว)
     price_now = df['Close'].iloc[-1]
 
-    if dir_label in ['up', 'down'] and len_pred >= 5 and proba > 0.85 and adx_val > 25:
+    if dir_label in ['up', 'down'] and len_pred >= 5 and proba > 0.85 and adx_val > 30:
         # จุดเริ่มต้นการเข้า position ใหม่
         if position is None:
             if dir_label == 'up':
@@ -176,7 +176,7 @@ while True:
     else:
         if position is not None:
             # พิจารณาปิดสถานะหาก trend เปลี่ยนหรือความมั่นใจลด
-            if adx_val < 25 or proba < 0.6:
+            if adx_val < 27 or proba < 0.6:
                 if position == 'up':
                     pnl = (price_now - entry_price) / entry_price * 100
                 else:
