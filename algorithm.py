@@ -188,10 +188,10 @@ while True:
     print("=========================================")
 
     # Update the placeholder with the latest action
-    placeholder.markdown(
+    placeholder.metric(
         f"🔮 **แนวโน้มถัดไป:** {dir_label.upper()} ต่อเนื่องประมาณ {len_pred} แท่ง")
-    placeholder.markdown(
+    placeholder.metric(
         f"🧠 **ความมั่นใจ:** {round(proba*100, 2)}% | ADX: {round(adx_val, 2)}")
-    placeholder.markdown(f"🎯 **คำแนะนำ:** {action}")
-    placeholder.markdown("=========================================")
+    placeholder.metric(f"🎯 **คำแนะนำ:** {action}")
+    placeholder.metric("=========================================")
     time.sleep(10)  # รอ 1 นาทีเพื่อให้ข้อมูลใหม่เข้ามา
