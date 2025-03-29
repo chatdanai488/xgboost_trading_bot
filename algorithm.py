@@ -21,6 +21,8 @@ sys.stdout.reconfigure(encoding='utf-8')
 
 
 # Streamlit User Interface
+st.set_page_config(
+    page_title="📈 Crypto Trading Signal Display", layout="centered")
 st.title("Crypto Trading Signal Display")
 
 # Create a placeholder for dynamic updates
